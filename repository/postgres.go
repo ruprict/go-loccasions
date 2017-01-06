@@ -1,10 +1,12 @@
 package repository
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
+	uuid "github.com/nu7hatch/gouuid"
 	loccasions "github.com/ruprict/loccasions-go"
 )
 
@@ -43,8 +45,55 @@ func (p *Postgres) GetEventsForUser(user_id string) *[]loccasions.Event {
 	return &events
 }
 
-func (p *Postgres) CreateEventForUser(user_id string, event *loccasions.Event) (uint, error) {
+func (p *Postgres) CreateEventForUser(user_id string, event *loccasions.Event) (string, error) {
 	event.UserID = user_id
 	DB.Create(event)
 	return event.ID, nil
+}
+
+func (p *Postgres) GetEventForUser(user_id string, id string) *loccasions.Event {
+	var event *loccasions.Event
+	u := new(loccasions.User)
+	u.ID = user_id
+	DB.Model(&event).Where("user_id=? and id=?", user_id, id).First(&event)
+
+	return event
+}
+func (p *Postgres) GetEvent(id string) *loccasions.Event {
+	var event loccasions.Event
+	event_id, err := uuid.ParseHex(id)
+	if err != nil {
+		fmt.Println("*** Error bad event id: ", err)
+		return nil
+	}
+	DB.First(&event, event_id)
+	if DB.Error != nil {
+		fmt.Println("*** Error finding event: ", DB.Error)
+	}
+
+	return &event
+}
+func (p *Postgres) UpdateEvent(id string, event *loccasions.Event) (*loccasions.Event, error) {
+	event.ID = id
+	DB.Save(&event)
+	return event, nil
+}
+func (p *Postgres) DeleteEvent(id string) error {
+	event := p.GetEvent(id)
+	DB.Delete(&event)
+	return nil
+}
+
+func (p *Postgres) GetOccasionsForEvent(event_id string) *[]loccasions.Occasion {
+	var occasions []loccasions.Occasion
+	event := p.GetEvent(event_id)
+	DB.Model(&event).Related(&occasions)
+	return &occasions
+}
+
+func (p *Postgres) AddOccasionToEvent(event_id string, occasion *loccasions.Occasion) (string, error) {
+	event := p.GetEvent(event_id)
+	DB.Model(&event).Association("Occasions").Append(occasion)
+	return occasion.ID, nil
+
 }

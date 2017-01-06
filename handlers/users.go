@@ -18,19 +18,19 @@ type UsersHandler struct {
 }
 
 func (u *UsersHandler) CreateUser(c echo.Context) error {
-	email := c.FormValue("email")
-	password := c.FormValue("password")
-	fmt.Println("password = ", password)
-	name := c.FormValue("name")
+	cc := c.(*CustomContext)
+	email := cc.FormValue("email")
+	password := cc.FormValue("password")
+	name := cc.FormValue("name")
 	user := loccasions.User{
 		Email:    email,
 		Password: salted(strings.TrimSpace(password)),
 		Name:     name,
 	}
 
-	_, err := u.Repo.CreateUser(&user)
+	_, err := cc.Repo.CreateUser(&user)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, &err)
+		return cc.JSON(http.StatusBadRequest, &err)
 	}
 
 	return c.JSON(http.StatusCreated, &user)
