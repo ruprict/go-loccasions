@@ -10,11 +10,22 @@
         width: 600px;
         height: 400px;
       }
+      #login {
+        margin-bottom: 1em;
+      }
     </style>
   </head>
   <body>
 
     <h1>HI THERE</h1>
+    <div id='login'>
+      <h2>Login</h2>
+      <form method="post" action="http://localhost:8080/login">
+        <input type="email" name="email" placeholder="email"/>
+        <input type="password" name="password" placeholder="password"/>
+        <input type="submit" value="Go"/>
+      </form>
+      </div>
     <div id="map"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qwest/4.4.5/qwest.min.js"></script>
     <script src="/static/js/client.js"></script>

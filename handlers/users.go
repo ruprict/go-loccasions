@@ -10,14 +10,9 @@ import (
 
 	"github.com/labstack/echo"
 	loccasions "github.com/ruprict/loccasions-go"
-	"github.com/ruprict/loccasions-go/repository"
 )
 
-type UsersHandler struct {
-	Repo repository.Repository
-}
-
-func (u *UsersHandler) CreateUser(c echo.Context) error {
+func CreateUser(c echo.Context) error {
 	cc := c.(*CustomContext)
 	email := cc.FormValue("email")
 	password := cc.FormValue("password")

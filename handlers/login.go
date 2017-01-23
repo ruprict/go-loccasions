@@ -8,20 +8,18 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
-	"github.com/ruprict/loccasions-go/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type LoginHandler struct {
-	Repo repository.Repository
-}
+func Login(c echo.Context) error {
 
-func (l *LoginHandler) Login(c echo.Context) error {
-
+	cc := c.(*CustomContext)
 	email := c.FormValue("email")
+	fmt.Println(cc)
+
 	password := strings.TrimSpace(c.FormValue("password"))
 
-	user := l.Repo.GetUserForEmail(email)
+	user := cc.Repo.GetUserForEmail(email)
 	if user == nil {
 		fmt.Println("**** user not found")
 		return echo.ErrNotFound
@@ -49,7 +47,7 @@ func (l *LoginHandler) Login(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.JSON(http.StatusOK, map[string]string{
+	return cc.JSON(http.StatusOK, map[string]string{
 		"token": t,
 	})
 

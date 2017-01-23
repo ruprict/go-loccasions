@@ -8,26 +8,62 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=p
   id: 'mapbox.light'
 }).addTo(map);
 
-qwest.get(
-  'http://localhost:8080/events/014b31ed-ff06-473a-968a-fb44e71846c3/occasions',
-  null,
-  {
-    headers: {
-      "Content-Type":"application/json",
-      "Authorization":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbiI6ZmFsc2UsImVtYWlsIjoiZ2xlbm4uZ29vZHJpY2hAZ21haWwuY29tIiwiZXhwIjoxNDgzOTc0MjE5LCJpZCI6IjkwNjQyYWUxLTg5NjItNGFiNC1hMjFmLWY5MTQzNzBlMThlNCIsIm5hbWUiOiJHbGVubiBHb29kcmljaCJ9.bz3r8ASO9gC_GRIsevHzWIsPItyESNxkhCAB-Lf9l3I"
-    }
-  }
-).then(function(xhr, response) {
-
-  console.log(response);
-  L.geoJSON(response, {onEachFeature: onEachFeature}).addTo(map);
-});
 
 
 function onEachFeature(feature, layer) {
-    // does this feature have a property named note?
-    if (feature.properties && feature.properties.note) {
-        layer.bindPopup(feature.properties.note);
-    }
+  // does this feature have a property named note?
+  if (feature.properties && feature.properties.note) {
+    layer.bindPopup(feature.properties.note);
+  }
 }
 
+document.addEventListener("DOMContentLoaded", function(){
+  // Handler when the DOM is fully loaded
+  document.querySelector("#login form").addEventListener("submit", function(ev) {
+    ev.preventDefault();
+
+    var email = ev.target[0].value;
+    var pwd = ev.target[1].value;
+
+    qwest.post('http://localhost:8080/login', {
+      email: email,
+      password: pwd
+    },
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      }
+    ).then(function(xhr, response) {
+      var token = response.token;
+      localStorage.setItem("token", token);
+      getItems()
+    })
+
+    return false;
+  });
+
+  getItems();
+});
+
+function getItems() {
+  token = localStorage.getItem("token");
+
+  if ( token ) {
+
+    qwest.get(
+      'http://localhost:8080/events/014b31ed-ff06-473a-968a-fb44e71846c3/occasions',
+      null,
+      {
+        headers: {
+          "Content-Type":"application/json",
+          "Authorization":"Bearer " + token
+        }
+      }
+    ).then(function(xhr, response) {
+
+      console.log(response);
+      L.geoJSON(response, {onEachFeature: onEachFeature}).addTo(map);
+    });
+  }
+}

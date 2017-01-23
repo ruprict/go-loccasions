@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -27,32 +28,30 @@ func (e *EventsHandler) CreateEvent(c echo.Context) error {
 }
 func (e *EventsHandler) GetEvents(c echo.Context) error {
 	cc := c.(*CustomContext)
-	claims := cc.Get("user").(*jwt.Token).Claims.(*JwtCustomClaims)
-	events := cc.Repo.GetEventsForUser(claims.ID)
-	return c.JSON(200, events)
+	return c.JSON(200, cc.Events)
 }
 
 func (e *EventsHandler) GetEvent(c echo.Context) error {
 	cc := c.(*CustomContext)
-	claims := cc.Get("user").(*jwt.Token).Claims.(*JwtCustomClaims)
-	id := c.Param("id")
-	event := cc.Repo.GetEventForUser(claims.ID, id)
-	if event == nil {
-		return cc.JSON(404, map[string]string{"error": "event not found"})
-	} else {
-		return cc.JSON(200, event)
-	}
+	//claims := cc.Get("user").(*jwt.Token).Claims.(*JwtCustomClaims)
+	//id := c.Param("id")
+	event := cc.Events[0]
+	return cc.JSON(200, event)
 }
 
 func (e *EventsHandler) PatchEvent(c echo.Context) error {
 	var json loccasions.Event
-	id := c.Param("id")
 	cc := c.(*CustomContext)
 	//claims := cc.Get("user").(*jwt.Token).Claims.(*JwtCustomClaims)
+	id := cc.Events[0].ID
 
 	//TODO: Make sure user owns event
 	if cc.Bind(&json) == nil {
-		cc.Repo.UpdateEvent(id, &json)
+		_, err := cc.Repo.UpdateEvent(id, &json)
+		if err != nil {
+			log.Println(err)
+			return cc.JSON(500, map[string]string{"error": "error updating event"})
+		}
 		return cc.JSON(200, json)
 	} else {
 		return cc.JSON(500, map[string]string{"error": "error updating event"})

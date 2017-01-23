@@ -3,6 +3,7 @@ package handlers
 import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
+	loccasions "github.com/ruprict/loccasions-go"
 	"github.com/ruprict/loccasions-go/repository"
 )
 
@@ -17,5 +18,6 @@ type JwtCustomClaims struct {
 
 type CustomContext struct {
 	echo.Context
-	Repo repository.Repository
+	Repo   repository.Repository
+	Events []*loccasions.Event
 }

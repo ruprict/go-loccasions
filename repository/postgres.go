@@ -14,6 +14,7 @@ type Postgres struct{}
 
 func init() {
 	db, err := gorm.Open("postgres", "postgresql://docker:docker@localhost/gis?sslmode=disable")
+	db.LogMode(true)
 	if err == nil {
 		log.Println("*** DB migrating....")
 		db.AutoMigrate(&loccasions.Occasion{}, &loccasions.Event{}, &loccasions.User{})
@@ -36,13 +37,13 @@ func (p *Postgres) GetUserForEmail(email string) *loccasions.User {
 	return &user
 }
 
-func (p *Postgres) GetEventsForUser(user_id string) *[]loccasions.Event {
+func (p *Postgres) GetEventsForUser(user_id string) []loccasions.Event {
 	var events []loccasions.Event
 	u := new(loccasions.User)
 	u.ID = user_id
 	DB.Model(&u).Association("Events").Find(&events)
 
-	return &events
+	return events
 }
 
 func (p *Postgres) CreateEventForUser(user_id string, event *loccasions.Event) (string, error) {
@@ -52,12 +53,15 @@ func (p *Postgres) CreateEventForUser(user_id string, event *loccasions.Event) (
 }
 
 func (p *Postgres) GetEventForUser(user_id string, id string) *loccasions.Event {
-	var event *loccasions.Event
-	u := new(loccasions.User)
-	u.ID = user_id
-	DB.Model(&event).Where("user_id=? and id=?", user_id, id).First(&event)
+	var events []loccasions.Event
 
-	return event
+	DB.Where("user_id=? and id=?", user_id, id).First(&events)
+
+	if len(events) == 1 {
+		return &events[0]
+	}
+
+	return nil
 }
 func (p *Postgres) GetEvent(id string) *loccasions.Event {
 	var event loccasions.Event
@@ -74,9 +78,13 @@ func (p *Postgres) GetEvent(id string) *loccasions.Event {
 	return &event
 }
 func (p *Postgres) UpdateEvent(id string, event *loccasions.Event) (*loccasions.Event, error) {
-	event.ID = id
-	DB.Save(&event)
-	return event, nil
+	ev := p.GetEvent(id)
+	err := DB.Model(ev).Update(event).Error
+	if err != nil {
+		fmt.Println("** WHA THE FOOOK", err)
+		return nil, err
+	}
+	return ev, nil
 }
 func (p *Postgres) DeleteEvent(id string) error {
 	event := p.GetEvent(id)
@@ -84,11 +92,11 @@ func (p *Postgres) DeleteEvent(id string) error {
 	return nil
 }
 
-func (p *Postgres) GetOccasionsForEvent(event_id string) *[]loccasions.Occasion {
+func (p *Postgres) GetOccasionsForEvent(event_id string) []loccasions.Occasion {
 	var occasions []loccasions.Occasion
 	event := p.GetEvent(event_id)
 	DB.Model(&event).Related(&occasions)
-	return &occasions
+	return occasions
 }
 
 func (p *Postgres) AddOccasionToEvent(event_id string, occasion *loccasions.Occasion) (string, error) {

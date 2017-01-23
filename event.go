@@ -8,7 +8,7 @@ type Event struct {
 	Name        string     `json:"name" validate:"required"`
 	Description string     `json:"description"`
 	Occasions   []Occasion `json:"occasions"`
-	UserID      string     `sql:"type:uuid"`
+	UserID      string     `sql:"type:uuid" gorm:"index:idx_user_id"`
 	ID          string     `sql:"type:uuid;primary_key;default:uuid_generate_v4()"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
