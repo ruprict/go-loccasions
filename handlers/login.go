@@ -15,12 +15,13 @@ func Login(c echo.Context) error {
 
 	cc := c.(*CustomContext)
 	email := c.FormValue("email")
-	fmt.Println(cc)
+	fmt.Println(cc.FormParams())
 
 	password := strings.TrimSpace(c.FormValue("password"))
 
 	user := cc.Repo.GetUserForEmail(email)
-	if user == nil {
+	fmt.Println(user.ID)
+	if user.ID == "" {
 		fmt.Println("**** user not found")
 		return echo.ErrNotFound
 	}
@@ -50,7 +51,5 @@ func Login(c echo.Context) error {
 	return cc.JSON(http.StatusOK, map[string]string{
 		"token": t,
 	})
-
-	return echo.ErrUnauthorized
 
 }

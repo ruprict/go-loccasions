@@ -20,14 +20,15 @@ func (e *EventsHandler) CreateEvent(c echo.Context) error {
 	json := new(loccasions.Event)
 	if err := c.Bind(json); err == nil {
 		cc.Repo.CreateEventForUser(claims.ID, json)
-
 		return c.JSON(201, json)
 	} else {
-		return c.JSON(500, map[string]string{"error": "error creating event"})
+		return c.JSON(500, map[string]string{"error": err.Error()})
 	}
 }
 func (e *EventsHandler) GetEvents(c echo.Context) error {
 	cc := c.(*CustomContext)
+	claims := c.Get("user").(*jwt.Token).Claims.(*JwtCustomClaims)
+	cc.Events = cc.Repo.GetEventsForUser(claims.ID)
 	return c.JSON(200, cc.Events)
 }
 

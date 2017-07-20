@@ -19,5 +19,5 @@ type JwtCustomClaims struct {
 type CustomContext struct {
 	echo.Context
 	Repo   repository.Repository
-	Events []*loccasions.Event
+	Events []loccasions.Event
 }

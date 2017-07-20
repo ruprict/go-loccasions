@@ -6,18 +6,17 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/lib/pq"
-	uuid "github.com/nu7hatch/gouuid"
 	loccasions "github.com/ruprict/loccasions-go"
 )
 
 type Postgres struct{}
 
 func init() {
-	db, err := gorm.Open("postgres", "postgresql://docker:docker@localhost/gis?sslmode=disable")
+	db, err := gorm.Open("postgres", "postgresql://docker:docker@localhost:5433/gis?sslmode=disable")
 	db.LogMode(true)
 	if err == nil {
 		log.Println("*** DB migrating....")
-		db.AutoMigrate(&loccasions.Occasion{}, &loccasions.Event{}, &loccasions.User{})
+		db.AutoMigrate(&loccasions.User{}, &loccasions.Event{}, &loccasions.Occasion{})
 		DB = Database{db}
 	} else {
 		log.Fatalln(err)
@@ -38,6 +37,7 @@ func (p *Postgres) GetUserForEmail(email string) *loccasions.User {
 }
 
 func (p *Postgres) GetEventsForUser(user_id string) []loccasions.Event {
+	fmt.Println("GET some mofoocking events")
 	var events []loccasions.Event
 	u := new(loccasions.User)
 	u.ID = user_id
@@ -55,7 +55,7 @@ func (p *Postgres) CreateEventForUser(user_id string, event *loccasions.Event) (
 func (p *Postgres) GetEventForUser(user_id string, id string) *loccasions.Event {
 	var events []loccasions.Event
 
-	DB.Where("user_id=? and id=?", user_id, id).First(&events)
+	DB.Preload("Occasions").Where("user_id=? and id=?", user_id, id).First(&events)
 
 	if len(events) == 1 {
 		return &events[0]
@@ -65,12 +65,7 @@ func (p *Postgres) GetEventForUser(user_id string, id string) *loccasions.Event 
 }
 func (p *Postgres) GetEvent(id string) *loccasions.Event {
 	var event loccasions.Event
-	event_id, err := uuid.ParseHex(id)
-	if err != nil {
-		fmt.Println("*** Error bad event id: ", err)
-		return nil
-	}
-	DB.First(&event, event_id)
+	DB.Where(&loccasions.Event{ID: id}).First(&event)
 	if DB.Error != nil {
 		fmt.Println("*** Error finding event: ", DB.Error)
 	}
@@ -100,7 +95,12 @@ func (p *Postgres) GetOccasionsForEvent(event_id string) []loccasions.Occasion {
 }
 
 func (p *Postgres) AddOccasionToEvent(event_id string, occasion *loccasions.Occasion) (string, error) {
+	fmt.Println("***")
+	fmt.Println(event_id)
+	fmt.Println("***")
 	event := p.GetEvent(event_id)
+	fmt.Println(event.ID)
+	fmt.Println("***")
 	DB.Model(&event).Association("Occasions").Append(occasion)
 	return occasion.ID, nil
 
