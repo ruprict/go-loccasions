@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "react": "registry:dt/react#15.0.0+20170131093605",
-    "react-dom": "registry:dt/react-dom#0.14.0+20170127232351",
-    "react-redux": "registry:npm/react-redux#4.4.0+20160614222153"
-  }
-}
