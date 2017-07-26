@@ -1,0 +1,109 @@
+module Main exposing (..)
+
+import Html exposing (Html, Attribute, header, a, div, text)
+import Html.Attributes exposing (class, href)
+import Html.Events exposing (Options, onWithOptions)
+import Navigation
+import String
+import Json.Decode as Json
+import UrlParser exposing (Parser, (</>), format, int, oneOf, s, string)
+import Update exposing (..)
+import Messages exposing(..)
+import Models exposing(State, newState)
+import Routing.Routes exposing(Route(..))
+import Routing.Parsers exposing(urlParser, parse)
+
+
+main : Program Never
+main =
+    Navigation.program urlParser
+        { init = init
+        , view = view
+        , update = update
+        , urlUpdate = urlUpdate
+        , subscriptions = subscriptions
+        }
+
+
+-- MODEL
+
+initialState : Route -> State
+initialState route =
+    { route = route
+    }
+
+
+init : Route -> ( State, Cmd Msg )
+init route =
+    ( initialState route, Cmd.none )
+
+
+type alias Url =
+    String
+
+--VIEW
+
+
+view : State -> Html Msg
+view state =
+    div [ class "page-wrap" ]
+        [ viewHeader
+        , viewBody state
+        ]
+
+
+viewBody : State -> Html Msg
+viewBody state =
+    div [ class "body-wrap" ] [ bodyContent state ]
+
+
+bodyContent : State -> Html Msg
+bodyContent state =
+    case state.route of
+        HomeRoute ->
+            div [] [ text "Home Page" ]
+
+        PostRoute postId ->
+            div [] [ text ("Posts Detail" ++ toString postId) ]
+
+        _ ->
+            div [] [ text "Not Found" ]
+
+
+viewHeader : Html Msg
+viewHeader =
+    header
+        [ class "main-header"
+        ]
+        [ a (linkAttrs ShowHome "/") [ text "Home" ]
+        ]
+
+
+linkAttrs : Msg -> String -> List (Attribute Msg)
+linkAttrs message link =
+    [ onClick message
+    , href link
+    , class "nav-link"
+    ]
+
+
+onClick : Msg -> Attribute Msg
+onClick message =
+    onWithOptions "click" noBubble (Json.succeed message)
+
+
+noBubble : Options
+noBubble =
+    { stopPropagation = True
+    , preventDefault = True
+    }
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : State -> Sub Msg
+subscriptions state =
+    Sub.none
+

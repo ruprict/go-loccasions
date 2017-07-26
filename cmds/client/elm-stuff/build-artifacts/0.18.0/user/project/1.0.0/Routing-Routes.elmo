@@ -1,0 +1,5 @@
+var _user$project$Routing_Routes$NotFound = {ctor: 'NotFound'};
+var _user$project$Routing_Routes$PostRoute = function (a) {
+	return {ctor: 'PostRoute', _0: a};
+};
+var _user$project$Routing_Routes$HomeRoute = {ctor: 'HomeRoute'};

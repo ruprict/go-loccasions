@@ -7,11 +7,11 @@ import (
 
 //User is our model object for profiles
 type User struct {
-	Email     string `sql:"unique"`
-	Name      string
+	Email     string `sql:"unique" jsonapi:"attr,email"`
+	Name      string `jsonapi:"attr,name"`
 	Password  string
-	Events    []Event
-	ID        string `sql:"type:uuid;primary_key;default:uuid_generate_v4()"`
+	Events    []*Event `jsonapi:"relation,events"`
+	ID        string   `sql:"type:uuid;primary_key;default:uuid_generate_v4()" jsonapi:"primary,users"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 	DeletedAt *time.Time

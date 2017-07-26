@@ -1,14 +1,17 @@
-var map = L.map('map').setView([35.175,-80.851], 13);
+// initialize Leaflet
+var map = L.map('map').setView({lon: 0, lat: 0}, 2);
 
-L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpandmbXliNDBjZWd2M2x6bDk3c2ZtOTkifQ._QA7i5Mpkd_m30IGElHziw', {
-  maxZoom: 18,
-  attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-  '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-  'Imagery © <a href="http://mapbox.com">Mapbox</a>',
-  id: 'mapbox.light'
+// add the OpenStreetMap tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
 }).addTo(map);
 
+// show the scale bar on the lower left corner
+L.control.scale().addTo(map);
 
+// show a marker on the map
+L.marker({lon: 0, lat: 0}).bindPopup('The center of the world').addTo(map);
 
 function onEachFeature(feature, layer) {
   // does this feature have a property named note?
@@ -37,16 +40,51 @@ document.addEventListener("DOMContentLoaded", function(){
     ).then(function(xhr, response) {
       var token = response.token;
       localStorage.setItem("token", token);
-      getItems()
+      getEvents();
     })
 
     return false;
   });
 
-  getItems();
+  getEvents();
 });
 
-function getItems() {
+function getEvents() {
+  token = localStorage.getItem("token");
+  if ( token ) {
+    console.log(token);
+    qwest.get(
+      'http://localhost:8080/events',
+      null,
+      {
+        headers: {
+          "Content-Type":"application/json",
+          "Authorization":"Bearer " + token
+        },
+        responseType: 'json'
+      }
+    ).then(function(xhr, response) {
+
+      var events = response.data;
+      try {
+        var eventsList = document.getElementById("events");
+      } catch(e) {
+        console.log(e);
+      }
+      events.forEach(function(ev) {
+        var el = document.createElement("li"),
+            a = document.createElement("a");
+        a.innerHTML= ev.attributes.name;
+        a.href = `/events/${ev.id}`;
+        el.appendChild(a);
+        eventsList.appendChild(el);
+      });
+
+    });
+  }
+}
+
+function getOccasions() {
   token = localStorage.getItem("token");
 
   if ( token ) {
@@ -58,7 +96,8 @@ function getItems() {
         headers: {
           "Content-Type":"application/json",
           "Authorization":"Bearer " + token
-        }
+        },
+        responseType: 'json'
       }
     ).then(function(xhr, response) {
 

@@ -1,0 +1,6 @@
+var _user$project$Models$newState = function (route) {
+	return {route: route};
+};
+var _user$project$Models$State = function (a) {
+	return {route: a};
+};

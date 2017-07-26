@@ -1,0 +1,4 @@
+var _user$project$Messages$ShowPost = function (a) {
+	return {ctor: 'ShowPost', _0: a};
+};
+var _user$project$Messages$ShowHome = {ctor: 'ShowHome'};

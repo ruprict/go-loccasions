@@ -40,13 +40,14 @@ func main() {
 	}
 	r.Use(middleware.JWTWithConfig(config))
 	r.POST("/:event_id/occasions", OccasionsHandler.PostOccasionToEvent)
+	r.GET("/:event_id/occasions", OccasionsHandler.GetOccasionsForEvent)
+	r.DELETE("/:event_id/occasions/:id", OccasionsHandler.DeleteOccasion)
 	r.GET("", EventsHandler.GetEvents)
 	r.GET("/", EventsHandler.GetEvents)
 	r.GET("/:id", policies.Event(EventsHandler.GetEvent))
 	r.POST("/", EventsHandler.CreateEvent)
 	r.PATCH("/:id", policies.Event(EventsHandler.PatchEvent))
 	r.DELETE("/:id", policies.Event(EventsHandler.DeleteEvent))
-	r.GET("/:event_id/occasions", OccasionsHandler.GetOccasionsForEvent)
 
 	e.Logger.SetLevel(log.DEBUG)
 	repository.DB.SetLogger(e.Logger)

@@ -29,7 +29,7 @@ func (e *EventsHandler) GetEvents(c echo.Context) error {
 	cc := c.(*CustomContext)
 	claims := c.Get("user").(*jwt.Token).Claims.(*JwtCustomClaims)
 	cc.Events = cc.Repo.GetEventsForUser(claims.ID)
-	return c.JSON(200, cc.Events)
+	return cc.JSONApi(200, cc.Events)
 }
 
 func (e *EventsHandler) GetEvent(c echo.Context) error {
@@ -37,7 +37,7 @@ func (e *EventsHandler) GetEvent(c echo.Context) error {
 	//claims := cc.Get("user").(*jwt.Token).Claims.(*JwtCustomClaims)
 	//id := c.Param("id")
 	event := cc.Events[0]
-	return cc.JSON(200, event)
+	return cc.JSONApi(201, event)
 }
 
 func (e *EventsHandler) PatchEvent(c echo.Context) error {
